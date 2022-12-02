@@ -1,13 +1,51 @@
 from typing import List
 
-from utils.readers import OneColumnFileReaderSpaceAware
 from rich import print
 
+from utils.readers import FileReader
+
+
+class OneColumnFileReaderSpaceAware(FileReader):
+    """
+    Implementation of a one column data file Reader with space awerness
+
+    E.g.
+
+    1
+    2
+    3
+
+    5
+    6
+    7
+
+    ->
+    [[1, 2, 3], [[5, 6 ,7]]
+    """
+
+    def read(self, *args) -> List[List]:
+        """
+        Implementation of a one column space aware data file read function
+        """
+        data = super(OneColumnFileReaderSpaceAware, self).read()
+        split_data = data.splitlines()
+
+        indexes = [i for i, x in enumerate(split_data) if not x]
+
+        result = []
+        for start, end in zip([0, *indexes], [*indexes, len(split_data)]):
+            chunk = [line for line in split_data[start : end + 1] if line]
+            chunk = list(map(int, chunk))
+            result.append(chunk)
+
+        return result
+
+
 test_reader = OneColumnFileReaderSpaceAware("input-test.txt")
-test_data = test_reader.read(type_to_cast=int)
+test_data = test_reader.read()
 
 reader = OneColumnFileReaderSpaceAware("input.txt")
-prod_data = reader.read(type_to_cast=int)
+prod_data = reader.read()
 
 data_sources = (("Test data", test_data), ("Prod data", prod_data))
 
